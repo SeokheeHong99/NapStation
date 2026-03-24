@@ -1,0 +1,152 @@
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "darwin", "rhel-openssl-1.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Place {
+  id              String    @id @default(uuid())
+  name            String
+  building        String
+  floor           String
+  outlet          Boolean
+  isPublic        Boolean   @map("is_public")
+  approved        Boolean
+  description     String?
+  tags            String[]
+  hours           String?
+  noiseLevel      String?   @map("noise_level")
+  busyLevel       String?   @map("busy_level")
+  lighting        String?
+  temperature     String?
+  wifi            String?
+  seatingType     String?   @map("seating_type")
+  capacity        Int?
+  photoUrl        String?   @map("photo_url")
+  photoAlt        String?   @map("photo_alt")
+  heartCount      Int       @default(0) @map("heart_count")
+  recommendationCount Int   @default(0) @map("recommendation_count")
+  isOutdoor       Boolean   @default(false) @map("is_outdoor")
+  address         String?
+  lat             Float?
+  lng             Float?
+  lastVerifiedAt  DateTime? @map("last_verified_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  comments        Comment[]
+  reports         Report[]
+  hearts          PlaceHeart[]
+  recommendations CandidateRecommendation[]
+
+  @@map("places")
+}
+
+model User {
+  id               String                    @id @default(uuid())
+  email            String                    @unique
+  name             String?
+  passwordHash     String                    @map("password_hash")
+  createdAt        DateTime                  @default(now()) @map("created_at")
+  updatedAt        DateTime                  @updatedAt @map("updated_at")
+  sessions         Session[]
+  placeHearts      PlaceHeart[]
+  commentHearts    CommentHeart[]
+  recommendations  CandidateRecommendation[]
+
+  @@map("users")
+}
+
+model Session {
+  id         String   @id @default(uuid())
+  tokenHash  String   @unique @map("token_hash")
+  userId     String   @map("user_id")
+  expiresAt  DateTime @map("expires_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model PlaceHeart {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  placeId   String   @map("place_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  place Place @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, placeId])
+  @@map("place_hearts")
+}
+
+model CandidateRecommendation {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  placeId   String   @map("place_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  place Place @relation(fields: [placeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, placeId])
+  @@map("candidate_recommendations")
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  placeId   String   @map("place_id")
+  text      String
+  photoUrls String[] @map("photo_urls")
+  heartCount Int     @default(0) @map("heart_count")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  place Place @relation(fields: [placeId], references: [id], onDelete: Cascade)
+  replies CommentReply[]
+  hearts  CommentHeart[]
+
+  @@map("comments")
+}
+
+model CommentHeart {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  commentId String   @map("comment_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, commentId])
+  @@map("comment_hearts")
+}
+
+model CommentReply {
+  id        String   @id @default(uuid())
+  commentId String   @map("comment_id")
+  text      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@map("comment_replies")
+}
+
+model Report {
+  id           String   @id @default(uuid())
+  placeId      String?  @map("place_id")
+  message      String
+  contactEmail String?  @map("contact_email")
+  photoUrls    String[] @default([]) @map("photo_urls")
+  status       String   @default("open")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  place Place? @relation(fields: [placeId], references: [id], onDelete: SetNull)
+
+  @@map("reports")
+}
