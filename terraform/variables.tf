@@ -1,18 +1,36 @@
-# Vercel
-variable "vercel_api_token" {
-  description = "Vercel API token (from vercel.com/account/tokens)"
+# AWS
+variable "aws_region" {
+  description = "AWS region to deploy into"
+  type        = string
+  default     = "us-east-1"
+}
+
+variable "aws_access_key" {
+  description = "AWS access key ID"
+  type        = string
+  sensitive   = true
+}
+
+variable "aws_secret_key" {
+  description = "AWS secret access key"
+  type        = string
+  sensitive   = true
+}
+
+variable "github_token" {
+  description = "GitHub personal access token with 'repo' scope (github.com/settings/tokens)"
   type        = string
   sensitive   = true
 }
 
 variable "github_repo" {
-  description = "GitHub repo in 'owner/repo-name' format (e.g. 'seokheehong/napstation')"
+  description = "GitHub repo in 'owner/repo-name' format"
   type        = string
 }
 
 # Neon
 variable "neon_api_key" {
-  description = "Neon API key (from console.neon.tech/app/settings/api-keys)"
+  description = "Neon API key (console.neon.tech → Settings → API Keys)"
   type        = string
   sensitive   = true
 }
@@ -24,7 +42,7 @@ variable "google_maps_api_key" {
   sensitive   = true
 }
 
-# Supabase (managed separately — set these from your Supabase dashboard)
+# Supabase
 variable "supabase_url" {
   description = "Supabase project URL"
   type        = string

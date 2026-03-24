@@ -1,10 +1,15 @@
-output "vercel_project_url" {
+output "amplify_app_url" {
   description = "Production deployment URL"
-  value       = "https://${vercel_project.napstation.name}.vercel.app"
+  value       = "https://main.${aws_amplify_app.napstation.default_domain}"
+}
+
+output "amplify_app_id" {
+  description = "Amplify app ID"
+  value       = aws_amplify_app.napstation.id
 }
 
 output "neon_project_id" {
-  description = "Neon project ID (useful for branching in CI)"
+  description = "Neon project ID"
   value       = neon_project.napstation.id
 }
 

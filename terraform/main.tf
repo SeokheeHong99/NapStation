@@ -17,52 +17,52 @@ resource "neon_database" "app" {
 }
 
 # ─────────────────────────────────────────────
-# Vercel Project
+# AWS Amplify
 # ─────────────────────────────────────────────
 
-resource "vercel_project" "napstation" {
-  name      = "napstation"
-  framework = "nextjs"
+resource "aws_amplify_app" "napstation" {
+  name         = "napstation"
+  repository   = "https://github.com/${var.github_repo}"
+  access_token = var.github_token
+  platform     = "WEB_COMPUTE" # enables SSR / Next.js API routes
 
-  git_repository = {
-    type = "github"
-    repo = var.github_repo
+  build_spec = <<-EOT
+    version: 1
+    frontend:
+      phases:
+        preBuild:
+          commands:
+            - cd NapStation
+            - npm install
+            - npx prisma generate
+        build:
+          commands:
+            - cd NapStation
+            - npm run build
+      artifacts:
+        baseDirectory: NapStation/.next
+        files:
+          - '**/*'
+      cache:
+        paths:
+          - NapStation/node_modules/**/*
+  EOT
+
+  environment_variables = {
+    DATABASE_URL                    = neon_project.napstation.connection_uri
+    NEXT_PUBLIC_GOOGLE_MAPS_API_KEY = var.google_maps_api_key
+    SUPABASE_URL                    = var.supabase_url
+    SUPABASE_SERVICE_ROLE_KEY       = var.supabase_service_role_key
+    AMPLIFY_MONOREPO_APP_ROOT       = "NapStation"
+    _LIVE_UPDATES                   = "[{\"name\":\"Next.js version\",\"pkg\":\"next-version\",\"type\":\"internal\",\"version\":\"latest\"}]"
   }
-
-  # Automatically deploy on push to main
-  build_command    = "npx prisma generate && npm run build"
-  root_directory   = null
-  serverless_function_region = "iad1" # us-east-1 — closest to Neon aws-us-east-2
 }
 
-# ─────────────────────────────────────────────
-# Vercel Environment Variables
-# ─────────────────────────────────────────────
+resource "aws_amplify_branch" "main" {
+  app_id      = aws_amplify_app.napstation.id
+  branch_name = "main"
+  framework   = "Next.js - SSR"
+  stage       = "PRODUCTION"
 
-resource "vercel_project_environment_variable" "database_url" {
-  project_id = vercel_project.napstation.id
-  key        = "DATABASE_URL"
-  value      = neon_project.napstation.connection_uri
-  target     = ["production", "preview", "development"]
-}
-
-resource "vercel_project_environment_variable" "google_maps_key" {
-  project_id = vercel_project.napstation.id
-  key        = "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY"
-  value      = var.google_maps_api_key
-  target     = ["production", "preview", "development"]
-}
-
-resource "vercel_project_environment_variable" "supabase_url" {
-  project_id = vercel_project.napstation.id
-  key        = "SUPABASE_URL"
-  value      = var.supabase_url
-  target     = ["production", "preview", "development"]
-}
-
-resource "vercel_project_environment_variable" "supabase_service_role_key" {
-  project_id = vercel_project.napstation.id
-  key        = "SUPABASE_SERVICE_ROLE_KEY"
-  value      = var.supabase_service_role_key
-  target     = ["production", "preview", "development"]
+  enable_auto_build = true
 }
