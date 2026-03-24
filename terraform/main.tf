@@ -3,8 +3,10 @@
 # ─────────────────────────────────────────────
 
 resource "neon_project" "napstation" {
-  name      = "napstation"
-  region_id = "aws-us-east-2"
+  name                      = "napstation"
+  region_id                 = "aws-us-east-2"
+  org_id                    = "org-wandering-fog-91274707"
+  history_retention_seconds = 21600
 }
 
 resource "neon_database" "app" {
@@ -41,26 +43,26 @@ resource "vercel_project_environment_variable" "database_url" {
   project_id = vercel_project.napstation.id
   key        = "DATABASE_URL"
   value      = neon_project.napstation.connection_uri
-  targets    = ["production", "preview", "development"]
+  target     = ["production", "preview", "development"]
 }
 
 resource "vercel_project_environment_variable" "google_maps_key" {
   project_id = vercel_project.napstation.id
   key        = "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY"
   value      = var.google_maps_api_key
-  targets    = ["production", "preview", "development"]
+  target     = ["production", "preview", "development"]
 }
 
 resource "vercel_project_environment_variable" "supabase_url" {
   project_id = vercel_project.napstation.id
   key        = "SUPABASE_URL"
   value      = var.supabase_url
-  targets    = ["production", "preview", "development"]
+  target     = ["production", "preview", "development"]
 }
 
 resource "vercel_project_environment_variable" "supabase_service_role_key" {
   project_id = vercel_project.napstation.id
   key        = "SUPABASE_SERVICE_ROLE_KEY"
   value      = var.supabase_service_role_key
-  targets    = ["production", "preview", "development"]
+  target     = ["production", "preview", "development"]
 }

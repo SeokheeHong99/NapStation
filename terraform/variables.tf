@@ -5,12 +5,6 @@ variable "vercel_api_token" {
   sensitive   = true
 }
 
-variable "vercel_team_id" {
-  description = "Vercel team ID — leave empty for personal account"
-  type        = string
-  default     = null
-}
-
 variable "github_repo" {
   description = "GitHub repo in 'owner/repo-name' format (e.g. 'seokheehong/napstation')"
   type        = string

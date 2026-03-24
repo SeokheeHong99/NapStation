@@ -1,5 +1,5 @@
 terraform {
-  required_version = ">= 1.6"
+  required_version = ">= 1.5"
 
   required_providers {
     vercel = {
@@ -15,7 +15,6 @@ terraform {
 
 provider "vercel" {
   api_token = var.vercel_api_token
-  team      = var.vercel_team_id # optional, remove if personal account
 }
 
 provider "neon" {
