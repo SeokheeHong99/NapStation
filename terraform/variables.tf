@@ -42,6 +42,13 @@ variable "google_maps_api_key" {
   sensitive   = true
 }
 
+# Admin
+variable "admin_password" {
+  description = "Password for the /admin dashboard"
+  type        = string
+  sensitive   = true
+}
+
 # Supabase
 variable "supabase_url" {
   description = "Supabase project URL"

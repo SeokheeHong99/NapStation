@@ -28,24 +28,24 @@ resource "aws_amplify_app" "napstation" {
 
   build_spec = <<-EOT
     version: 1
-    frontend:
-      phases:
-        preBuild:
-          commands:
-            - cd NapStation
-            - npm install
-            - npx prisma generate
-        build:
-          commands:
-            - cd NapStation
-            - npm run build
-      artifacts:
-        baseDirectory: NapStation/.next
-        files:
-          - '**/*'
-      cache:
-        paths:
-          - NapStation/node_modules/**/*
+    applications:
+      - appRoot: NapStation
+        frontend:
+          phases:
+            preBuild:
+              commands:
+                - npm install
+                - npx prisma generate
+            build:
+              commands:
+                - npm run build
+          artifacts:
+            baseDirectory: .next
+            files:
+              - '**/*'
+          cache:
+            paths:
+              - node_modules/**/*
   EOT
 
   environment_variables = {
@@ -53,6 +53,7 @@ resource "aws_amplify_app" "napstation" {
     NEXT_PUBLIC_GOOGLE_MAPS_API_KEY = var.google_maps_api_key
     SUPABASE_URL                    = var.supabase_url
     SUPABASE_SERVICE_ROLE_KEY       = var.supabase_service_role_key
+    ADMIN_PASSWORD                  = var.admin_password
     AMPLIFY_MONOREPO_APP_ROOT       = "NapStation"
     _LIVE_UPDATES                   = "[{\"name\":\"Next.js version\",\"pkg\":\"next-version\",\"type\":\"internal\",\"version\":\"latest\"}]"
   }
