@@ -62,14 +62,38 @@ export default function AdminPage() {
     reports: [], places: [], users: [], hearts: [],
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async (t: Tab) => {
     setLoading(true);
-    const res = await fetch(`/api/admin/${t}`);
-    if (res.status === 401) { router.push("/admin/login"); return; }
-    const json = await res.json();
-    setData(prev => ({ ...prev, [t]: json }));
-    setLoading(false);
+    setError(null);
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 15000);
+      let res: Response;
+      try {
+        res = await fetch(`/api/admin/${t}`, { signal: controller.signal });
+      } finally {
+        clearTimeout(timer);
+      }
+      if (res.status === 401) { router.push("/admin/login"); return; }
+      const text = await res.text();
+      if (!res.ok) {
+        setError(`API error ${res.status}: ${text.slice(0, 300)}`);
+        return;
+      }
+      try {
+        const json = JSON.parse(text);
+        setData(prev => ({ ...prev, [t]: Array.isArray(json) ? json : [] }));
+        if (!Array.isArray(json)) setError(`Unexpected response: ${text.slice(0, 300)}`);
+      } catch {
+        setError(`Invalid JSON from API: ${text.slice(0, 300)}`);
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setLoading(false);
+    }
   }, [router]);
 
   useEffect(() => { load(tab); }, [tab, load]);
@@ -180,6 +204,10 @@ export default function AdminPage() {
         }}>
           {loading ? (
             <div style={{ padding: "3rem", textAlign: "center", color: "#888" }}>Loading…</div>
+          ) : error ? (
+            <div style={{ padding: "3rem", textAlign: "center", color: "#c62828", fontFamily: "monospace", fontSize: "0.85rem", whiteSpace: "pre-wrap", wordBreak: "break-all" }}>
+              Error: {error}
+            </div>
           ) : (
             <>
               {tab === "reports" && <ReportsTable rows={data.reports as ReportRow[]} onStatus={updateReport} onDelete={id => del("reports", id)} />}
