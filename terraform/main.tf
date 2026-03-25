@@ -36,7 +36,7 @@ resource "aws_amplify_app" "napstation" {
               commands:
                 - npm install
                 - npx prisma generate
-                - echo "ADMIN_PASSWORD=$ADMIN_PASSWORD" >> .env.production.local
+                - node -e "const {createHash}=require('crypto');const p=process.env.ADMIN_PASSWORD||'';const t=createHash('sha256').update(p+'napstation-admin-v1').digest('hex');require('fs').writeFileSync('app/lib/admin.config.ts','import{createHash}from\"crypto\";const p=process.env.ADMIN_PASSWORD??\"\";export const ADMIN_TOKEN=\"'+t+'\";export const HAS_PASSWORD=true;');"
                 - echo "DATABASE_URL=$DATABASE_URL" >> .env.production.local
                 - echo "SUPABASE_URL=$SUPABASE_URL" >> .env.production.local
                 - echo "SUPABASE_SERVICE_ROLE_KEY=$SUPABASE_SERVICE_ROLE_KEY" >> .env.production.local

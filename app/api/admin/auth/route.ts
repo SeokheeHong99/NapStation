@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
-import { createAdminSession, clearAdminSession } from "../../../lib/admin-auth";
+import { createAdminSession, clearAdminSession, checkPassword } from "../../../lib/admin-auth";
 
 export async function POST(request: Request) {
   const { password } = await request.json();
 
-  if (!process.env.ADMIN_PASSWORD || password !== process.env.ADMIN_PASSWORD) {
+  const valid = await checkPassword(password);
+  if (!valid) {
     return NextResponse.json({ error: "Invalid password" }, { status: 401 });
   }
 
