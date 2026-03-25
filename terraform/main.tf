@@ -21,7 +21,7 @@ resource "neon_database" "app" {
 # ─────────────────────────────────────────────
 
 resource "aws_amplify_app" "napstation" {
-  name         = "napstation"
+  name         = "NapStation"
   repository   = "https://github.com/${var.github_repo}"
   access_token = var.github_token
   platform     = "WEB_COMPUTE" # enables SSR / Next.js API routes
@@ -36,6 +36,10 @@ resource "aws_amplify_app" "napstation" {
               commands:
                 - npm install
                 - npx prisma generate
+                - echo "ADMIN_PASSWORD=$ADMIN_PASSWORD" >> .env.production.local
+                - echo "DATABASE_URL=$DATABASE_URL" >> .env.production.local
+                - echo "SUPABASE_URL=$SUPABASE_URL" >> .env.production.local
+                - echo "SUPABASE_SERVICE_ROLE_KEY=$SUPABASE_SERVICE_ROLE_KEY" >> .env.production.local
             build:
               commands:
                 - npm run build
