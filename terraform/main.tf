@@ -28,28 +28,26 @@ resource "aws_amplify_app" "napstation" {
 
   build_spec = <<-EOT
     version: 1
-    applications:
-      - appRoot: NapStation
-        frontend:
-          phases:
-            preBuild:
-              commands:
-                - npm install
-                - npx prisma generate
-                - node -e "const {createHash}=require('crypto');const p=process.env.ADMIN_PASSWORD||'';const t=createHash('sha256').update(p+'napstation-admin-v1').digest('hex');require('fs').writeFileSync('app/lib/admin.config.ts','import{createHash}from\"crypto\";const p=process.env.ADMIN_PASSWORD??\"\";export const ADMIN_TOKEN=\"'+t+'\";export const HAS_PASSWORD=true;');"
-                - echo "DATABASE_URL=$DATABASE_URL" >> .env.production.local
-                - echo "SUPABASE_URL=$SUPABASE_URL" >> .env.production.local
-                - echo "SUPABASE_SERVICE_ROLE_KEY=$SUPABASE_SERVICE_ROLE_KEY" >> .env.production.local
-            build:
-              commands:
-                - npm run build
-          artifacts:
-            baseDirectory: .next
-            files:
-              - '**/*'
-          cache:
-            paths:
-              - node_modules/**/*
+    frontend:
+      phases:
+        preBuild:
+          commands:
+            - npm install
+            - npx prisma generate
+            - node -e "const {createHash}=require('crypto');const p=process.env.ADMIN_PASSWORD||'';const t=createHash('sha256').update(p+'napstation-admin-v1').digest('hex');require('fs').writeFileSync('app/lib/admin.config.ts','import{createHash}from\"crypto\";const p=process.env.ADMIN_PASSWORD??\"\";export const ADMIN_TOKEN=\"'+t+'\";export const HAS_PASSWORD=true;');"
+            - echo "DATABASE_URL=$DATABASE_URL" >> .env.production.local
+            - echo "SUPABASE_URL=$SUPABASE_URL" >> .env.production.local
+            - echo "SUPABASE_SERVICE_ROLE_KEY=$SUPABASE_SERVICE_ROLE_KEY" >> .env.production.local
+        build:
+          commands:
+            - npm run build
+      artifacts:
+        baseDirectory: .next
+        files:
+          - '**/*'
+      cache:
+        paths:
+          - node_modules/**/*
   EOT
 
   environment_variables = {
@@ -58,7 +56,6 @@ resource "aws_amplify_app" "napstation" {
     SUPABASE_URL                    = var.supabase_url
     SUPABASE_SERVICE_ROLE_KEY       = var.supabase_service_role_key
     ADMIN_PASSWORD                  = var.admin_password
-    AMPLIFY_MONOREPO_APP_ROOT       = "NapStation"
     _LIVE_UPDATES                   = "[{\"name\":\"Next.js version\",\"pkg\":\"next-version\",\"type\":\"internal\",\"version\":\"latest\"}]"
   }
 }
